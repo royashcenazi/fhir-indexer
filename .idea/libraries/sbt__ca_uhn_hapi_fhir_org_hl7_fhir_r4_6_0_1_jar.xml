@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="sbt: ca.uhn.hapi.fhir:org.hl7.fhir.r4:6.0.1:jar" external-system-id="SBT">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/ca/uhn/hapi/fhir/org.hl7.fhir.r4/6.0.1/org.hl7.fhir.r4-6.0.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/ca/uhn/hapi/fhir/org.hl7.fhir.r4/6.0.1/org.hl7.fhir.r4-6.0.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/ca/uhn/hapi/fhir/org.hl7.fhir.r4/6.0.1/org.hl7.fhir.r4-6.0.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
