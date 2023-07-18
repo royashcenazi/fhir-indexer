@@ -1,4 +1,5 @@
-package com.scalahealth.fhir.indexer
+package com.scalahealth.fhir
+
 import zio.json._
 class HelloSpec extends munit.FunSuite {
   test("say hello") {

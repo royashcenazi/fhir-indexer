@@ -1,14 +1,15 @@
-package com.scalahealth.fhir.indexer
+package com.scalahealth.fhir
+
 import ca.uhn.fhir.rest.gclient.TokenClientParam
-import com.scalahealth.fhir.indexer.client.{FHIRHapiClient, FHIRHapiClientImpl, RequestMetadata}
-import com.scalahealth.fhir.indexer.config.ScalaHealthFhirConfig
-import org.hl7.fhir.r4.model.Observation
-import zio.{Runtime, Scope, Unsafe, ZIO, ZIOApp, ZIOAppArgs, ZIOAppDefault}
+import com.scalahealth.fhir.client.{FHIRHapiClient, FHIRHapiClientImpl, RequestMetadata}
+import com.scalahealth.fhir.config.ScalaHealthFhirConfig
+import org.hl7.fhir.r4.model.{Bundle, Observation}
+import zio.{Exit, Runtime, Scope, Unsafe, ZIO, ZIOApp, ZIOAppArgs, ZIOAppDefault}
 
 object ZioApp extends ZIOAppDefault {
   private val requestMetadata = RequestMetadata[TokenClientParam]("123")
 
-  def myApp = for {
+  def myApp: ZIO[FHIRHapiClient, Nothing, Exit[Throwable, Bundle]] = for {
     zio <- ZIO.serviceWith[FHIRHapiClient](_.executeSearch[Observation, TokenClientParam](requestMetadata))
   } yield {
     Unsafe.unsafe { implicit unsafe =>
@@ -25,7 +26,7 @@ object ZioApp extends ZIOAppDefault {
   override def run: ZIO[Any with ZIOAppArgs with Scope, Any, Any] = {
     myApp.debug("stam")
       .provide(ScalaHealthFhirConfigTest.layer,
-        FHIRHapiClientImpl.layer)
+        FHIRHapiClientImpl.layer())
   }
 }
 

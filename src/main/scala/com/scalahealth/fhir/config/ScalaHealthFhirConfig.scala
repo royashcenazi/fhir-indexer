@@ -1,3 +1,3 @@
-package com.scalahealth.fhir.indexer.config
+package com.scalahealth.fhir.config
 
 case class ScalaHealthFhirConfig(url: String)

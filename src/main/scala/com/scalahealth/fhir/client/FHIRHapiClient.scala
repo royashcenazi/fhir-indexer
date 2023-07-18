@@ -1,38 +1,27 @@
-package com.scalahealth.fhir.indexer.client
+package com.scalahealth.fhir.client
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.rest.client.api.IGenericClient
 import ca.uhn.fhir.rest.gclient.{ICriterion, IGetPageTyped, IParam, IQuery, IReadExecutable, ReferenceClientParam}
-import com.scalahealth.fhir.indexer.config.ScalaHealthFhirConfig
+import com.scalahealth.fhir.config.ScalaHealthFhirConfig
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.r4.model.{Bundle, Resource}
 import zio.{Task, ZIO, ZLayer}
 import zio.json._
 
+import scala.jdk.javaapi.CollectionConverters
 import scala.reflect.{ClassTag, classTag}
 
 case class RequestMetadata[T <: IParam](patientId: String, additionalHeaders: Seq[(String, String)] = Seq(), additionalCriterions: Seq[ICriterion[T]] = Seq())
 
 trait FHIRHapiClient {
-  def executeSearch[R <: Resource : ClassTag, T <: IParam](searchMetadata: RequestMetadata[T]): Task[Bundle]
-
-  def executeRead[R <: Resource : ClassTag, T <: IParam](searchMetadata: RequestMetadata[T]): Task[R]
-
-  def loadNextPage(bundle: Bundle, additionalHeaders: (String, String)*): Task[Option[Bundle]]
-
-  //
-  //  def serializeResource[R <: Resource](r: R): String
-  //
-  //  def serializeBundle(bundle: Bundle): Seq[String]
-  //
-}
-
-class FHIRHapiClientImpl(config: ScalaHealthFhirConfig, fhirCtx: FhirContext = FhirContext.forR4()) extends FHIRHapiClient {
-  private val client: IGenericClient = fhirCtx.newRestfulGenericClient(config.url)
+  protected val config: ScalaHealthFhirConfig
+  protected val fhirContext: FhirContext
+  private val client: IGenericClient = fhirContext.newRestfulGenericClient(config.url)
   private val pageLoader = client.loadPage()
-  private val jsonParser = fhirCtx.newJsonParser()
+  private val jsonParser = fhirContext.newJsonParser()
 
-  override def executeSearch[R <: Resource : ClassTag, T <: IParam](searchMetadata: RequestMetadata[T]): Task[Bundle] = {
+  def executeSearch[R <: Resource : ClassTag, T <: IParam](searchMetadata: RequestMetadata[T]): Task[Bundle] = {
     ZIO.attempt {
       val basicQuery = client.search().forResource(classTag[R].runtimeClass.asInstanceOf[Class[R]])
         .where(new ReferenceClientParam("patient").hasId(searchMetadata.patientId))
@@ -44,7 +33,7 @@ class FHIRHapiClientImpl(config: ScalaHealthFhirConfig, fhirCtx: FhirContext = F
     }
   }
 
-  override def executeRead[R <: Resource : ClassTag, T <: IParam](requestMetadata: RequestMetadata[T]): Task[R] = {
+  def executeRead[R <: Resource : ClassTag, T <: IParam](requestMetadata: RequestMetadata[T]): Task[R] = {
     ZIO.attempt {
       val basicQuery: IReadExecutable[R] = client.read().resource(classTag[R].runtimeClass.asInstanceOf[Class[R]])
         .withId(requestMetadata.patientId)
@@ -54,7 +43,7 @@ class FHIRHapiClientImpl(config: ScalaHealthFhirConfig, fhirCtx: FhirContext = F
     }
   }
 
-  override def loadNextPage(bundle: Bundle, additionalHeaders: (String, String)*): Task[Option[Bundle]] = {
+  def loadNextPage(bundle: Bundle, additionalHeaders: (String, String)*): Task[Option[Bundle]] = {
     ZIO.attempt {
       Option.when(bundle.getLink(IBaseBundle.LINK_NEXT) != null) {
         val request: IGetPageTyped[Bundle] = pageLoader.next(bundle)
@@ -94,26 +83,26 @@ class FHIRHapiClientImpl(config: ScalaHealthFhirConfig, fhirCtx: FhirContext = F
       })
     }
   }
+
+  def serializeResource[R <: Resource](r: R): String = {
+    jsonParser.encodeResourceToString(r)
+  }
+
+  def serializeBundle(bundle: Bundle): Seq[String] = {
+    val entries = CollectionConverters.asScala(bundle.getEntry).map(_.getResource).toSeq
+    entries.map(serializeResource)
+  }
 }
 
+class FHIRHapiClientImpl(override val config: ScalaHealthFhirConfig, override val fhirContext: FhirContext) extends FHIRHapiClient {}
 
 object FHIRHapiClientImpl {
-  val layer: ZLayer[ScalaHealthFhirConfig, Nothing, FHIRHapiClient] =
+  def layer(fhirCtx: FhirContext = FhirContext.forR4()): ZLayer[ScalaHealthFhirConfig, Nothing, FHIRHapiClient] =
     ZLayer {
       for {
         config <- ZIO.service[ScalaHealthFhirConfig]
       } yield {
-        new FHIRHapiClientImpl(config)
+        new FHIRHapiClientImpl(config, fhirCtx)
       }
     }
 }
-
-
-//
-//  override def executeRead[R <: Resource : ClassTag](patientId: String): Future[R] = ???
-//
-//  override def serializeResource[R <: Resource](r: R): String = ???
-//
-//  override def serializeBundle(bundle: Bundle): Seq[String] = ???
-//
-//  override def loadNextPage(bundle: Bundle): Future[Option[Bundle]] = ???
