@@ -6,23 +6,28 @@ import org.hl7.fhir.r4.model.{Bundle, Condition, Resource}
 import zio.stream.{ZSink, ZStream}
 import zio.{Chunk, Task, ZIO, ZLayer}
 
-import scala.math.BigDecimal
 import scala.reflect.ClassTag
 
 trait ApiIndexer {
+  type ProcessResult
   protected val hapiFhirClient: FHIRHapiClient
 
-  protected def persist(patientId: String, processedPages: Chunk[String]): Task[Unit]
+  def indexApi[T <: IParam](searchMetadata: RequestMetadata[T]): ZIO[Any, Throwable, ProcessResult]
 
-  protected def indexApi[T <: IParam](searchMetadata: RequestMetadata[T]): ZIO[Any, Throwable, Unit]
-
-  protected def createPagedApiIndexingFlow[R <: Resource : ClassTag, T <: IParam](searchMetadata: RequestMetadata[T]): Task[Unit] = {
+  protected def createPagedApiIndexingFlow[R <: Resource : ClassTag, T <: IParam](searchMetadata: RequestMetadata[T]): Task[Chunk[String]] = {
     for {
       bundle <- hapiFhirClient.executeSearch[R, T](searchMetadata)
       pagedResponses <- getPaginationZstream(bundle)
       _ <- ZIO.log(s"Processed api: ${getClass.getSimpleName} with ${pagedResponses.size} entries")
-      wr <- persist(searchMetadata.patientId, pagedResponses)
-    } yield wr
+    } yield pagedResponses
+  }
+
+  protected def createSinglePageFlow[R <: Resource : ClassTag, T <: IParam](searchMetadata: RequestMetadata[T]): Task[String] = {
+    for {
+      resource <- hapiFhirClient.executeRead[R, T](searchMetadata)
+      _ <- ZIO.log(s"Processed single page api: ${getClass.getSimpleName}")
+      parsedResource = hapiFhirClient.serializeResource(resource)
+    } yield parsedResource
   }
 
   private def getPaginationZstream(firstPage: Bundle): ZIO[Any, Throwable, Chunk[String]] = {
@@ -35,21 +40,3 @@ trait ApiIndexer {
   }
 }
 
-
-// TODO an example for usage, delete it
-class ConditionIndexer(override val hapiFhirClient: FHIRHapiClient) extends ApiIndexer {
-  override protected def persist(patientId: String, processedPages: Chunk[String]): Task[Unit] =
-    ZIO.attempt(println(s"Persisting ${processedPages.size} pages for patient $patientId"))
-
-  override protected def indexApi[T <: IParam](searchMetadata: RequestMetadata[T]): ZIO[Any, Throwable, Unit] = {
-    createPagedApiIndexingFlow[Condition, T](searchMetadata)
-  }
-}
-
-object ConditionIndexer {
-  val layer = ZLayer {
-    for {
-      hapiClient <- ZIO.service[FHIRHapiClient]
-    } yield new ConditionIndexer(hapiClient)
-  }
-}
