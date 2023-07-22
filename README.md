@@ -1,4 +1,4 @@
-# FHIR APIs Indexing with ZIO Leveraging HAPI FHIR
+# FHIR APIs Indexing with ZIO 
 
 ## Table of Contents
 
@@ -31,7 +31,7 @@ WIP
 
 ## Usage
 
-See an example of usage in ```/src/main/scala/ZioApp```
+See an example of usage in ```/src/main/scala/com.scalahealth.fhir.ZioApp```
 
 ## Contributing
 
