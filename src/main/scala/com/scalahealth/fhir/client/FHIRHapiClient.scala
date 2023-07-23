@@ -12,7 +12,7 @@ import zio.json._
 import scala.jdk.javaapi.CollectionConverters
 import scala.reflect.{ClassTag, classTag}
 
-case class RequestMetadata[T <: IParam](patientId: String, additionalHeaders: Seq[(String, String)] = Seq(), additionalCriterions: Seq[ICriterion[T]] = Seq())
+case class RequestMetadata[T <: IParam](patientId: String, additionalHeaders: Seq[(String, String)] = Seq(), additionalCriteria: Seq[ICriterion[T]] = Seq())
 
 trait FHIRHapiClient {
   protected val config: ScalaHealthFhirConfig
@@ -26,7 +26,7 @@ trait FHIRHapiClient {
       val basicQuery = client.search().forResource(classTag[R].runtimeClass.asInstanceOf[Class[R]])
         .where(new ReferenceClientParam("patient").hasId(searchMetadata.patientId))
 
-      basicQuery.withAdditionalCond(searchMetadata.additionalCriterions)
+      basicQuery.withAdditionalCond(searchMetadata.additionalCriteria)
         .withAdditionalHeaders(searchMetadata)
         .returnBundle(classOf[Bundle])
         .execute()
@@ -65,8 +65,8 @@ trait FHIRHapiClient {
 
   private implicit class QueryExecutableOps[R <: Resource](queryExecutable: IQuery[Nothing]) {
 
-    def withAdditionalCond[T <: IParam](additionalCriterions: Seq[ICriterion[T]]): IQuery[Nothing] = {
-      additionalCriterions.foldLeft(queryExecutable)((query, criterion) => query.and(criterion))
+    def withAdditionalCond[T <: IParam](additionalCriteria: Seq[ICriterion[T]]): IQuery[Nothing] = {
+      additionalCriteria.foldLeft(queryExecutable)((query, criterion) => query.and(criterion))
     }
 
     def withAdditionalHeaders[T <: IParam](requestMetadata: RequestMetadata[T]): IQuery[Nothing] = {
