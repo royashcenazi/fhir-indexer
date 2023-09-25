@@ -3,6 +3,7 @@ package com.scalahealth.fhir.indexer
 import ca.uhn.fhir.rest.gclient.{ICriterion, IParam, TokenClientParam}
 import com.scalahealth.fhir.client.{FHIRHapiClient, RequestMetadata}
 import org.hl7.fhir.r4.model.{Bundle, Condition, Resource}
+import zio.http.Client
 import zio.stream.{ZSink, ZStream}
 import zio.{Chunk, Task, ZIO, ZLayer}
 

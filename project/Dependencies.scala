@@ -10,6 +10,8 @@ object Dependencies {
   //TODO - remove this dependency and use the one from the feelbetter-plugin
   val jackson = "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.15.2"
 
+  val jwt = "com.pauldijou" %% "jwt-core" % "5.0.0"
+
   val zio = Seq(
     "dev.zio" %% "zio" % "2.0.15",
     "dev.zio" %% "zio-streams" % "2.0.15",

@@ -5,11 +5,12 @@ ThisBuild / version          := "0.1.0-SNAPSHOT"
 ThisBuild / organization     := "com.example"
 ThisBuild / organizationName := "example"
 
+
 lazy val root = (project in file("."))
   .settings(
     name := "fhir-indexer",
     libraryDependencies ++=
-      Seq(munit, happyFhirClient, r4Model, happyFhirBase,
+      Seq(munit, happyFhirClient, r4Model, happyFhirBase, jwt,
         jackson, javaSecurity) ++ zio
   )
 

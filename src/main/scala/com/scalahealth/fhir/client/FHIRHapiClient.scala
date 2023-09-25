@@ -6,7 +6,8 @@ import ca.uhn.fhir.rest.gclient.{ICriterion, IGetPageTyped, IParam, IQuery, IRea
 import com.scalahealth.fhir.config.ScalaHealthFhirConfig
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.r4.model.{Bundle, Resource}
-import zio.{Task, ZIO, ZLayer}
+import zio.http.Client
+import zio.{&, Task, ZIO, ZLayer}
 import zio.json._
 
 import scala.jdk.javaapi.CollectionConverters
@@ -17,26 +18,35 @@ case class RequestMetadata[T <: IParam](patientId: String, additionalHeaders: Se
 trait FHIRHapiClient {
   protected val config: ScalaHealthFhirConfig
   protected val fhirContext: FhirContext
-  private val client: IGenericClient = fhirContext.newRestfulGenericClient(config.url)
+  protected val authClient: FhirAuthClient
+  private val client: IGenericClient = fhirContext.newRestfulGenericClient(s"${config.url}/api/FHIR/R4")
   private val pageLoader = client.loadPage()
   private val jsonParser = fhirContext.newJsonParser()
 
   def executeSearch[R <: Resource : ClassTag, T <: IParam](searchMetadata: RequestMetadata[T]): Task[Bundle] = {
-    ZIO.attempt {
+    for {
+      token <- authClient.getAccessToken
+      } yield {
       val basicQuery = client.search().forResource(classTag[R].runtimeClass.asInstanceOf[Class[R]])
         .where(new ReferenceClientParam("patient").hasId(searchMetadata.patientId))
 
-      basicQuery.withAdditionalCond(searchMetadata.additionalCriteria)
+      val query = basicQuery.withAdditionalCond(searchMetadata.additionalCriteria)
         .withAdditionalHeaders(searchMetadata)
         .returnBundle(classOf[Bundle])
-        .execute()
+        .withAdditionalHeader("Authorization", s"${getTokenField(token)}")
+
+      query.execute()
     }
   }
 
+
   def executeRead[R <: Resource : ClassTag, T <: IParam](requestMetadata: RequestMetadata[T]): Task[R] = {
-    ZIO.attempt {
+    for {
+      token <- authClient.getAccessToken
+    } yield {
       val basicQuery: IReadExecutable[R] = client.read().resource(classTag[R].runtimeClass.asInstanceOf[Class[R]])
         .withId(requestMetadata.patientId)
+        .withAdditionalHeader("Authorization", s"${getTokenField(token)}")
 
       basicQuery.withAdditionalHeaders(requestMetadata)
         .execute()
@@ -92,17 +102,21 @@ trait FHIRHapiClient {
     val entries = CollectionConverters.asScala(bundle.getEntry).map(_.getResource).toSeq
     entries.map(serializeResource)
   }
+
+  protected def getTokenField(token: String) = s"Bearer $token"
+
 }
 
-class FHIRHapiClientImpl(override val config: ScalaHealthFhirConfig, override val fhirContext: FhirContext) extends FHIRHapiClient {}
+class FHIRHapiClientImpl(override val config: ScalaHealthFhirConfig, override val fhirContext: FhirContext, override val authClient: FhirAuthClient) extends FHIRHapiClient {}
 
 object FHIRHapiClientImpl {
-  def layer(fhirCtx: FhirContext = FhirContext.forR4()): ZLayer[ScalaHealthFhirConfig, Nothing, FHIRHapiClient] =
+  def layer(fhirCtx: FhirContext = FhirContext.forR4()): ZLayer[FhirAuthClient & ScalaHealthFhirConfig, Nothing, FHIRHapiClient] =
     ZLayer {
       for {
+        fhirAuthClient <- ZIO.service[FhirAuthClient]
         config <- ZIO.service[ScalaHealthFhirConfig]
       } yield {
-        new FHIRHapiClientImpl(config, fhirCtx)
+        new FHIRHapiClientImpl(config, fhirCtx, fhirAuthClient)
       }
     }
 }

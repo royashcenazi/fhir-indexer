@@ -1,11 +1,12 @@
 package com.scalahealth.fhir
 
 import ca.uhn.fhir.rest.gclient.{IParam, TokenClientParam}
-import com.scalahealth.fhir.client.{FHIRHapiClient, FHIRHapiClientImpl, RequestMetadata}
+import com.scalahealth.fhir.client.{FHIRHapiClient, FHIRHapiClientImpl, FhirAuthClientImpl, RequestMetadata}
 import com.scalahealth.fhir.config.ScalaHealthFhirConfig
 import com.scalahealth.fhir.indexer.ApiIndexer
 import org.hl7.fhir.r4.model.{Bundle, Condition, Observation}
-import zio.{Exit, Runtime, Scope, Unsafe, ZIO, ZIOApp, ZIOAppArgs, ZIOAppDefault, ZLayer}
+import zio.http.{Body, Client, Response, ZClient}
+import zio.{&, Exit, Runtime, Scope, Unsafe, ZIO, ZIOApp, ZIOAppArgs, ZIOAppDefault, ZLayer}
 
 // TODO an example for usage, delete it
 object ZioApp extends ZIOAppDefault {
@@ -30,7 +31,7 @@ object ZioApp extends ZIOAppDefault {
   }
 
   def myApp: ZIO[ConditionIndexer, Nothing, Exit[Throwable, Unit]] = {
-    val requestMetadata = RequestMetadata[TokenClientParam]("123")
+    val requestMetadata = RequestMetadata[TokenClientParam]("")
     for {
       conditionsService <- ZIO.service[ConditionIndexer]
       zio = conditionsService.indexApi[TokenClientParam](requestMetadata)
@@ -43,15 +44,22 @@ object ZioApp extends ZIOAppDefault {
 
   object ScalaHealthFhirConfigTest {
     val layer: zio.ZLayer[Any, Nothing, ScalaHealthFhirConfig] =
-      zio.ZLayer.succeed(ScalaHealthFhirConfig(url = "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4"))
+      zio.ZLayer.succeed(ScalaHealthFhirConfig(url = "",
+        authUrl ="/oauth2/token",
+        clientId = "",
+        secret = ""))
   }
 
 
-  override def run: ZIO[Any with ZIOAppArgs with Scope, Any, Any] = {
+  override def run: ZIO[Any, Throwable, Exit[Throwable, Unit]] = {
     myApp.debug("example")
-      .provide(ScalaHealthFhirConfigTest.layer,
-        ConditionIndexer.layer,
-        FHIRHapiClientImpl.layer())
+      .provide(
+        Client.default,
+        ScalaHealthFhirConfigTest.layer,
+        FhirAuthClientImpl.layer(),
+        FHIRHapiClientImpl.layer(),
+        ConditionIndexer.layer
+      )
   }
 }
 
