@@ -1,4 +1,4 @@
-package com.scalahealth.fhir
+package io.github.royashcenazi.fhir.indexer
 
 import zio.json._
 class HelloSpec extends munit.FunSuite {

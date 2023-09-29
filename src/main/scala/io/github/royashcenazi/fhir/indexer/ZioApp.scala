@@ -1,9 +1,9 @@
-package com.scalahealth.fhir
+package io.github.royashcenazi.fhir.indexer
 
 import ca.uhn.fhir.rest.gclient.{IParam, TokenClientParam}
-import com.scalahealth.fhir.client.{FHIRHapiClient, FHIRHapiClientImpl, FhirAuthClientImpl, RequestMetadata}
-import com.scalahealth.fhir.config.ScalaHealthFhirConfig
-import com.scalahealth.fhir.indexer.ApiIndexer
+import io.github.royashcenazi.fhir.indexer.client.{FHIRHapiClient, FHIRHapiClientImpl, FhirAuthClientImpl, RequestMetadata}
+import io.github.royashcenazi.fhir.indexer.config.ScalaHealthFhirConfig
+import io.github.royashcenazi.fhir.indexer.indexer.ApiIndexer
 import org.hl7.fhir.r4.model.{Bundle, Condition, Observation}
 import zio.http.{Body, Client, Response, ZClient}
 import zio.{&, Exit, Runtime, Scope, Unsafe, ZIO, ZIOApp, ZIOAppArgs, ZIOAppDefault, ZLayer}

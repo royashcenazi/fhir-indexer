@@ -1,9 +1,9 @@
-package com.scalahealth.fhir.client
+package io.github.royashcenazi.fhir.indexer.client
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.rest.client.api.IGenericClient
 import ca.uhn.fhir.rest.gclient.{ICriterion, IGetPageTyped, IParam, IQuery, IReadExecutable, ReferenceClientParam}
-import com.scalahealth.fhir.config.ScalaHealthFhirConfig
+import io.github.royashcenazi.fhir.indexer.config.ScalaHealthFhirConfig
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.r4.model.{Bundle, Resource}
 import zio.http.Client

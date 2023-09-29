@@ -1,15 +1,14 @@
-package com.scalahealth.fhir.client
+package io.github.royashcenazi.fhir.indexer.client
 
-import com.scalahealth.fhir.config.ScalaHealthFhirConfig
+import io.github.royashcenazi.fhir.indexer.config.ScalaHealthFhirConfig
 import pdi.jwt.JwtAlgorithm.RS256
 import pdi.jwt.{Jwt, JwtClaim}
-import zio.http.FormField.Binary
-import zio.{&, Chunk, Task, ZEnvironment, ZIO, ZLayer}
+import zio.http._
+import zio.json._
+import zio.{&, Task, ZIO, ZLayer}
 
 import java.time.Instant
 import java.util.UUID
-import zio.http.{Body, Client, Form, FormField, Header, Headers, MediaType, Method, Request, Response, URL, Version, ZClient}
-import zio.json._
 
 
 trait FhirAuthClient {
