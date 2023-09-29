@@ -42,7 +42,7 @@ Welcome to the FHIR Indexing with ZIO and HAPI FHIR repository! This open-source
 
 ## Usage
 
-See an example of usage in ```/src/main/scala/com.scalahealth.fhir.ZioApp```
+See an example of usage in ```/src/main/scala/io.github.royashcenazi.fhir.indexer.ZioApp```
 
 ## Contributing
 
