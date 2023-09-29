@@ -1,11 +1,10 @@
 package io.github.royashcenazi.fhir.indexer.indexer
 
-import ca.uhn.fhir.rest.gclient.{ICriterion, IParam, TokenClientParam}
+import ca.uhn.fhir.rest.gclient.IParam
 import io.github.royashcenazi.fhir.indexer.client.{FHIRHapiClient, RequestMetadata}
-import org.hl7.fhir.r4.model.{Bundle, Condition, Resource}
-import zio.http.Client
+import org.hl7.fhir.r4.model.{Bundle, Resource}
 import zio.stream.{ZSink, ZStream}
-import zio.{Chunk, Task, ZIO, ZLayer}
+import zio.{Chunk, Task, ZIO}
 
 import scala.reflect.ClassTag
 

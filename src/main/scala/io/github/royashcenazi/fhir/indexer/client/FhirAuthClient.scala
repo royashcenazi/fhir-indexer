@@ -1,6 +1,6 @@
 package io.github.royashcenazi.fhir.indexer.client
 
-import io.github.royashcenazi.fhir.indexer.config.ScalaHealthFhirConfig
+import io.github.royashcenazi.fhir.indexer.config.FhirIndexingConfig
 import pdi.jwt.JwtAlgorithm.RS256
 import pdi.jwt.{Jwt, JwtClaim}
 import zio.http._
@@ -12,7 +12,7 @@ import java.util.UUID
 
 
 trait FhirAuthClient {
-  protected val config: ScalaHealthFhirConfig
+  protected val config: FhirIndexingConfig
   protected val zioClient: Client
 
   protected def setup(): Int = {
@@ -65,16 +65,16 @@ trait FhirAuthClient {
   }
 }
 
-  class FhirAuthClientImpl(override val config: ScalaHealthFhirConfig, override val zioClient: Client) extends FhirAuthClient {
+  class FhirAuthClientImpl(override val config: FhirIndexingConfig, override val zioClient: Client) extends FhirAuthClient {
     setup()
   }
 
   object FhirAuthClientImpl {
-    def layer(): ZLayer[Client & ScalaHealthFhirConfig, Throwable, FhirAuthClientImpl] =
+    def layer(): ZLayer[Client & FhirIndexingConfig, Throwable, FhirAuthClientImpl] =
       ZLayer {
         for {
           client <- ZIO.service[Client]
-          config <- ZIO.service[ScalaHealthFhirConfig]
+          config <- ZIO.service[FhirIndexingConfig]
         } yield {
           new FhirAuthClientImpl(config, client)
         }

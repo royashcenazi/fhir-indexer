@@ -3,7 +3,7 @@ package io.github.royashcenazi.fhir.indexer.client
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.rest.client.api.IGenericClient
 import ca.uhn.fhir.rest.gclient.{ICriterion, IGetPageTyped, IParam, IQuery, IReadExecutable, ReferenceClientParam}
-import io.github.royashcenazi.fhir.indexer.config.ScalaHealthFhirConfig
+import io.github.royashcenazi.fhir.indexer.config.FhirIndexingConfig
 import org.hl7.fhir.instance.model.api.IBaseBundle
 import org.hl7.fhir.r4.model.{Bundle, Resource}
 import zio.http.Client
@@ -16,7 +16,7 @@ import scala.reflect.{ClassTag, classTag}
 case class RequestMetadata[T <: IParam](patientId: String, additionalHeaders: Seq[(String, String)] = Seq(), additionalCriteria: Seq[ICriterion[T]] = Seq())
 
 trait FHIRHapiClient {
-  protected val config: ScalaHealthFhirConfig
+  protected val config: FhirIndexingConfig
   protected val fhirContext: FhirContext
   protected val authClient: FhirAuthClient
   private val client: IGenericClient = fhirContext.newRestfulGenericClient(s"${config.url}/api/FHIR/R4")
@@ -107,14 +107,14 @@ trait FHIRHapiClient {
 
 }
 
-class FHIRHapiClientImpl(override val config: ScalaHealthFhirConfig, override val fhirContext: FhirContext, override val authClient: FhirAuthClient) extends FHIRHapiClient {}
+class FHIRHapiClientImpl(override val config: FhirIndexingConfig, override val fhirContext: FhirContext, override val authClient: FhirAuthClient) extends FHIRHapiClient {}
 
 object FHIRHapiClientImpl {
-  def layer(fhirCtx: FhirContext = FhirContext.forR4()): ZLayer[FhirAuthClient & ScalaHealthFhirConfig, Nothing, FHIRHapiClient] =
+  def layer(fhirCtx: FhirContext = FhirContext.forR4()): ZLayer[FhirAuthClient & FhirIndexingConfig, Nothing, FHIRHapiClient] =
     ZLayer {
       for {
         fhirAuthClient <- ZIO.service[FhirAuthClient]
-        config <- ZIO.service[ScalaHealthFhirConfig]
+        config <- ZIO.service[FhirIndexingConfig]
       } yield {
         new FHIRHapiClientImpl(config, fhirCtx, fhirAuthClient)
       }

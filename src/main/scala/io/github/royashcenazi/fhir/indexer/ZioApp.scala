@@ -2,7 +2,7 @@ package io.github.royashcenazi.fhir.indexer
 
 import ca.uhn.fhir.rest.gclient.{IParam, TokenClientParam}
 import io.github.royashcenazi.fhir.indexer.client.{FHIRHapiClient, FHIRHapiClientImpl, FhirAuthClientImpl, RequestMetadata}
-import io.github.royashcenazi.fhir.indexer.config.ScalaHealthFhirConfig
+import io.github.royashcenazi.fhir.indexer.config.FhirIndexingConfig
 import io.github.royashcenazi.fhir.indexer.indexer.ApiIndexer
 import org.hl7.fhir.r4.model.{Bundle, Condition, Observation}
 import zio.http.{Body, Client, Response, ZClient}
@@ -42,9 +42,9 @@ object ZioApp extends ZIOAppDefault {
     }
   }
 
-  object ScalaHealthFhirConfigTest {
-    val layer: zio.ZLayer[Any, Nothing, ScalaHealthFhirConfig] =
-      zio.ZLayer.succeed(ScalaHealthFhirConfig(url = "",
+  object FhirConfigTest {
+    val layer: zio.ZLayer[Any, Nothing, FhirIndexingConfig] =
+      zio.ZLayer.succeed(FhirIndexingConfig(url = "",
         authUrl ="/oauth2/token",
         clientId = "",
         secret = ""))
@@ -55,7 +55,7 @@ object ZioApp extends ZIOAppDefault {
     myApp.debug("example")
       .provide(
         Client.default,
-        ScalaHealthFhirConfigTest.layer,
+        FhirConfigTest.layer,
         FhirAuthClientImpl.layer(),
         FHIRHapiClientImpl.layer(),
         ConditionIndexer.layer
