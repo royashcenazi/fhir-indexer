@@ -44,7 +44,7 @@ See an example of usage in ```/src/main/scala/io.github.royashcenazi.fhir.indexe
 
 ## Contributing
 
-We welcome contributions to the FHIR Indexing project! If you find any issues or have ideas for improvements, please feel free to open an issue or submit a pull request. Please follow our [Contribution Guidelines](./CONTRIBUTING.md) for more information on how to contribute.
+We welcome contributions to the FHIR Indexing project! If you find any issues or have ideas for improvements, please feel free to open an issue or submit a pull request. 
 
 ## License
 
