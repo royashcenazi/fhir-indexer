@@ -21,8 +21,6 @@ Welcome to the FHIR Indexing with ZIO and HAPI FHIR repository! This open-source
 
 - **Authentication Support**: The library supports various authentication mechanisms for accessing secure FHIR endpoints, ensuring data privacy and security.
 
-- **Error Handling**: Comprehensive error handling is implemented to provide meaningful feedback in case of issues during indexing.
-
 - **Resource Filtering and Transformation**: Users can define custom filters and transformations to tailor the indexing process according to their specific requirements.
 
 ## Installation
