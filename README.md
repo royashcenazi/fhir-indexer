@@ -29,14 +29,14 @@ Welcome to the FHIR Indexing with ZIO and HAPI FHIR repository! This open-source
 
 ### SBT
 
-`libraryDependencies += "io.github.royashcenazi" % "fhir-indexer" % "v0.0.1"`
+`libraryDependencies += "io.github.royashcenazi" % "fhir-indexer" % "v0.0.2"`
 
 ### Maven
 ```
    <dependency>
         <groupId>io.github.royashcenazi</groupId>
         <artifactId>fhir-indexer</artifactId>
-        <version>v0.0.1</version>
+        <version>v0.0.2</version>
     </dependency>
 ```
 
