@@ -1,16 +1,15 @@
 import Dependencies._
 
 
-lazy val root = (project in file("."))
-  .settings(
-    name := "fhir-indexer",
-    scalaVersion := "2.13.11",
-    version := "v0.0.1",
-    organization := "io.github.royashcenazi",
-    libraryDependencies ++=
-      Seq(munit, happyFhirClient, r4Model, happyFhirBase, jwt,
-        jackson, javaSecurity) ++ zio
-  )
+name := "fhir-indexer"
+scalaVersion := "2.13.11"
+version := "v0.0.2"
+organization := "io.github.royashcenazi"
+
+libraryDependencies ++=
+  Seq(munit, happyFhirClient, r4Model, happyFhirBase, jwt,
+    jackson, javaSecurity) ++ zio
+
 
 developers := List(
   Developer(

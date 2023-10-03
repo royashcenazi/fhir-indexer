@@ -107,13 +107,13 @@ trait FHIRHapiClient {
 
 }
 
-class FHIRHapiClientImpl(override val config: FhirIndexingConfig, override val fhirContext: FhirContext, override val authClient: FhirAuthClient) extends FHIRHapiClient {}
+class FHIRHapiClientImpl(override val config: FhirIndexingConfig, override val fhirContext: FhirContext, override val authClient: FhirAuthZioClient) extends FHIRHapiClient {}
 
 object FHIRHapiClientImpl {
-  def layer(fhirCtx: FhirContext = FhirContext.forR4()): ZLayer[FhirAuthClient & FhirIndexingConfig, Nothing, FHIRHapiClient] =
+  def layer(fhirCtx: FhirContext = FhirContext.forR4()): ZLayer[FhirAuthZioClient & FhirIndexingConfig, Nothing, FHIRHapiClient] =
     ZLayer {
       for {
-        fhirAuthClient <- ZIO.service[FhirAuthClient]
+        fhirAuthClient <- ZIO.service[FhirAuthZioClient]
         config <- ZIO.service[FhirIndexingConfig]
       } yield {
         new FHIRHapiClientImpl(config, fhirCtx, fhirAuthClient)

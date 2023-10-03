@@ -12,19 +12,33 @@ import java.util.UUID
 
 
 trait FhirAuthClient {
+
+  case class AccessToken(access_token: String)
+
+  object AccessToken {
+    implicit val decoder: JsonDecoder[AccessToken] = DeriveJsonDecoder.gen[AccessToken]
+  }
+
   protected val config: FhirIndexingConfig
-  protected val zioClient: Client
 
   protected def setup(): Int = {
     java.security.Security.addProvider(
       new org.bouncycastle.jce.provider.BouncyCastleProvider()
     );
   }
+  def getAccessToken: Task[String]
 
-  case class AccessToken(access_token: String)
-  object AccessToken {
-    implicit val decoder: JsonDecoder[AccessToken] = DeriveJsonDecoder.gen[AccessToken]
+  protected def getJwtToken: String = {
+    val id = UUID.randomUUID().toString
+    val fiveMinFromNow = Instant.now().plusSeconds(300).getEpochSecond
+    val claim = JwtClaim(issuer = Some(config.clientId), subject = Some(config.clientId), audience = Some(Set(config.authUrl)),
+      jwtId = Some(id), expiration = Some(fiveMinFromNow))
+    Jwt.encode(claim, config.secret, RS256)
   }
+}
+
+trait FhirAuthZioClient extends FhirAuthClient {
+  protected val zioClient: Client
 
   def getAccessToken: Task[String] = {
     val token = getJwtToken
@@ -55,17 +69,9 @@ trait FhirAuthClient {
       )
     }
   }
-
-  private def getJwtToken: String = {
-    val id = UUID.randomUUID().toString
-    val fiveMinFromNow = Instant.now().plusSeconds(300).getEpochSecond
-    val claim = JwtClaim(issuer = Some(config.clientId), subject = Some(config.clientId), audience = Some(Set(config.authUrl)),
-      jwtId = Some(id), expiration = Some(fiveMinFromNow))
-    Jwt.encode(claim, config.secret, RS256)
-  }
 }
 
-  class FhirAuthClientImpl(override val config: FhirIndexingConfig, override val zioClient: Client) extends FhirAuthClient {
+  class FhirAuthClientImpl(override val config: FhirIndexingConfig, override val zioClient: Client) extends FhirAuthZioClient {
     setup()
   }
 

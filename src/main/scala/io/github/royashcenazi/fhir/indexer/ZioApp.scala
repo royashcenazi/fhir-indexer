@@ -4,7 +4,7 @@ import ca.uhn.fhir.rest.gclient.{IParam, TokenClientParam}
 import io.github.royashcenazi.fhir.indexer.client.{FHIRHapiClient, FHIRHapiClientImpl, FhirAuthClientImpl, RequestMetadata}
 import io.github.royashcenazi.fhir.indexer.config.FhirIndexingConfig
 import io.github.royashcenazi.fhir.indexer.indexer.ApiIndexer
-import org.hl7.fhir.r4.model.{Bundle, Condition, Observation}
+import org.hl7.fhir.r4.model.{Bundle, Condition, Encounter, Observation}
 import zio.http.{Body, Client, Response, ZClient}
 import zio.{&, Exit, Runtime, Scope, Unsafe, ZIO, ZIOApp, ZIOAppArgs, ZIOAppDefault, ZLayer}
 
@@ -16,7 +16,7 @@ object ZioApp extends ZIOAppDefault {
 
     override def indexApi[T <: IParam](searchMetadata: RequestMetadata[T]): ZIO[Any, Throwable, Unit] = {
       for {
-        data <- createPagedApiIndexingFlow[Condition, T](searchMetadata)
+        data <- createPagedApiIndexingFlow[Encounter, T](searchMetadata)
         _ <- ZIO.log(s"Processed api: ${getClass.getSimpleName} with ${data.size} entries")
       } yield ()
     }

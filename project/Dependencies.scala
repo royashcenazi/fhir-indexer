@@ -7,7 +7,6 @@ object Dependencies {
   val logBack = "ch.qos.logback" % "logback-classic" % "1.4.6"
   val happyFhirBase = "ca.uhn.hapi.fhir" % "hapi-fhir-base" % "6.6.0"
   val slf4j = "org.slf4j" % "slf4j-api" % "2.0.7"
-  //TODO - remove this dependency and use the one from the feelbetter-plugin
   val jackson = "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.15.2"
 
   val jwt = "com.pauldijou" %% "jwt-core" % "5.0.0"
